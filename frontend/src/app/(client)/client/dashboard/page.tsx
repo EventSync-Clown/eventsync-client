@@ -23,7 +23,6 @@ export default function DashboardPage() {
           <span className="text-[10px] uppercase tracking-[0.6em] font-black text-[#c4a973]/80">À l'affiche</span>
         </div>
         
-        {/* On affiche le premier événement de la liste comme vitrine */}
         {events.length > 0 && (
           <EventCard 
             title={events[0].title}

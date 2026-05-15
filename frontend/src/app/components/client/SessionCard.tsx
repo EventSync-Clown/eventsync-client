@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Clock, 
@@ -32,6 +32,30 @@ export default function SessionCard({ session }: SessionProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [upvotes, setUpvotes] = useState(session.upvotes);
 
+  // --- AJOUT : Charger l'état initial des favoris ---
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem('tendak_favs') || '[]');
+    setIsLiked(favorites.includes(session.id));
+  }, [session.id]);
+
+  // --- AJOUT : Logique de sauvegarde localStorage ---
+  const toggleFavorite = () => {
+    const favorites = JSON.parse(localStorage.getItem('tendak_favs') || '[]');
+    let newFavorites;
+
+    if (favorites.includes(session.id)) {
+      newFavorites = favorites.filter((id: number) => id !== session.id);
+      setIsLiked(false);
+    } else {
+      newFavorites = [...favorites, session.id];
+      setIsLiked(true);
+    }
+
+    localStorage.setItem('tendak_favs', JSON.stringify(newFavorites));
+    // Optionnel : notifie les autres composants du changement
+    window.dispatchEvent(new Event("storage_favorites_updated"));
+  };
+
   return (
     <div className="group relative p-8 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-[#c4a973]/30 transition-all duration-500 shadow-xl overflow-hidden">
       
@@ -51,7 +75,7 @@ export default function SessionCard({ session }: SessionProps) {
         </div>
         
         <button 
-          onClick={() => setIsLiked(!isLiked)}
+          onClick={toggleFavorite} // --- MODIFIÉ : Utilise la nouvelle fonction ---
           className={`p-3 rounded-2xl transition-all ${isLiked ? 'bg-[#c4a973] text-[#1a1d1a]' : 'bg-white/5 text-gray-400 hover:text-white'}`}
         >
           <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
