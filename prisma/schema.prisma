@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  sessions    Session[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Room {
+  id       String    @id @default(cuid())
+  name     String
+  sessions Session[]
+}
+
+model Speaker {
+  id        String           @id @default(cuid())
+  name      String
+  photo     String?
+  bio       String
+  links     Json             @default("{}")
+  sessions  SessionSpeaker[]
+  createdAt DateTime         @default(now())
+}
+
+model Session {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  capacity    Int?
+  event       Event            @relation(fields: [eventId], references: [id])
+  eventId     String
+  room        Room             @relation(fields: [roomId], references: [id])
+  roomId      String
+  speakers    SessionSpeaker[]
+  questions   Question[]
+  createdAt   DateTime         @default(now())
+}
+
+model SessionSpeaker {
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+  speaker   Speaker @relation(fields: [speakerId], references: [id])
+  speakerId String
+
+  @@id([sessionId, speakerId])
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  content    String
+  authorName String?
+  upvotes    Int      @default(0)
+  session    Session  @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  createdAt  DateTime @default(now())
+}
