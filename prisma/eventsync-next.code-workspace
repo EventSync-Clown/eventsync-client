@@ -3,10 +3,6 @@
 		{
 			"name": "eventsync-next",
 			"path": ".."
-		},
-		{
-			"name": "node_modules",
-			"path": "../../eventsync-backend/node_modules"
 		}
 	],
 	"settings": {}
