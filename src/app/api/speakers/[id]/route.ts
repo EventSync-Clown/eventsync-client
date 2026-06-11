@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { sendSuccess, sendError } from '@/lib/response'
+import { isLive } from '@/lib/isLive'
+
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -12,16 +14,31 @@ export async function GET(
         sessions: {
           include: {
             session: {
-              include: { room: true, event: true },
+              include: {
+                room: true,
+                event: true,
+              },
             },
           },
-          orderBy: { session: { startTime: 'asc' } },
         },
       },
     })
-    if (!speaker) return sendError('Chef introuvable', 404)
-    return sendSuccess(speaker)
-  } catch {
-    return sendError('Erreur serveur')
+
+    if (!speaker) {
+      return sendError('Speaker not found', 404)
+    }
+
+    const sessionsWithLive = speaker.sessions.map((item) => ({
+      ...item.session,
+      isLive: isLive(item.session.startTime, item.session.endTime),
+    }))
+
+    return sendSuccess({
+      ...speaker,
+      sessions: sessionsWithLive,
+    })
+  } catch (error) {
+    console.error('Error fetching speaker:', error)
+    return sendError('Failed to fetch speaker', 500)
   }
 }

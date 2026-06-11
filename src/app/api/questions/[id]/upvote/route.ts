@@ -1,18 +1,31 @@
 import { prisma } from '@/lib/prisma'
 import { sendSuccess, sendError } from '@/lib/response'
 
-// PATCH /api/questions/:id/upvote
 export async function PATCH(
-  _req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const question = await prisma.question.update({
+    const question = await prisma.question.findUnique({
       where: { id: params.id },
-      data:  { upvotes: { increment: 1 } },
     })
-    return sendSuccess(question)
-  } catch {
-    return sendError('Question introuvable', 404)
+
+    if (!question) {
+      return sendError('Question not found', 404)
+    }
+
+    const updatedQuestion = await prisma.question.update({
+      where: { id: params.id },
+      data: {
+        upvotes: {
+          increment: 1,
+        },
+      },
+    })
+
+    return sendSuccess(updatedQuestion)
+  } catch (error) {
+    console.error('Error upvoting question:', error)
+    return sendError('Failed to upvote question', 500)
   }
 }

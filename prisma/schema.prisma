@@ -19,53 +19,57 @@ model Event {
   updatedAt   DateTime  @updatedAt
 }
 
-model Room {
-  id       String    @id @default(cuid())
-  name     String
-  sessions Session[]
-}
-
-model Speaker {
-  id        String           @id @default(cuid())
-  name      String
-  photo     String?
-  bio       String
-  links     Json             @default("{}")
-  sessions  SessionSpeaker[]
-  createdAt DateTime         @default(now())
-}
-
 model Session {
-  id          String           @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String
   startTime   DateTime
   endTime     DateTime
-  capacity    Int?
-  event       Event            @relation(fields: [eventId], references: [id])
+  capacity    Int?      
   eventId     String
-  room        Room             @relation(fields: [roomId], references: [id])
+  event       Event     @relation(fields: [eventId], references: [id])
   roomId      String
-  speakers    SessionSpeaker[]
+  room        Room      @relation(fields: [roomId], references: [id])
+  speakers    SpeakerOnSession[]
   questions   Question[]
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
-model SessionSpeaker {
-  session   Session @relation(fields: [sessionId], references: [id])
-  sessionId String
-  speaker   Speaker @relation(fields: [speakerId], references: [id])
-  speakerId String
+model Room {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  sessions  Session[]
+  createdAt DateTime  @default(now())
+}
 
-  @@id([sessionId, speakerId])
+model Speaker {
+  id          String    @id @default(cuid())
+  name        String
+  photoUrl    String?
+  bio         String?
+  externalUrl String?
+  sessions    SpeakerOnSession[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model SpeakerOnSession {
+  speakerId   String
+  sessionId   String
+  speaker     Speaker   @relation(fields: [speakerId], references: [id])
+  session     Session   @relation(fields: [sessionId], references: [id])
+
+  @@id([speakerId, sessionId])
 }
 
 model Question {
-  id         String   @id @default(cuid())
-  content    String
-  authorName String?
-  upvotes    Int      @default(0)
-  session    Session  @relation(fields: [sessionId], references: [id])
-  sessionId  String
-  createdAt  DateTime @default(now())
+  id          String    @id @default(cuid())
+  content     String
+  authorName  String?   
+  upvotes     Int       @default(0)
+  sessionId   String
+  session     Session   @relation(fields: [sessionId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

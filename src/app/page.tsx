@@ -1,72 +1,116 @@
+import Link from 'next/link'
+
 export default function Home() {
-  const routes = [
-    { method: 'GET',   path: '/api/events',                            desc: 'Liste tous les événements' },
-    { method: 'GET',   path: '/api/events/:id',                        desc: 'Détail d\'un événement + sessions' },
-    { method: 'GET',   path: '/api/sessions',                          desc: 'Liste les sessions (?eventId, ?roomId)' },
-    { method: 'GET',   path: '/api/sessions/live',                     desc: 'Sessions en cours (live)' },
-    { method: 'GET',   path: '/api/sessions/:id',                      desc: 'Détail d\'une session + questions' },
-    { method: 'GET',   path: '/api/sessions/:id/questions',            desc: 'Questions d\'une session (triées par upvotes)' },
-    { method: 'POST',  path: '/api/sessions/:id/questions',            desc: 'Poser une question (session live uniquement)' },
-    { method: 'PATCH', path: '/api/questions/:id/upvote',              desc: 'Upvoter une question' },
-    { method: 'GET',   path: '/api/speakers',                          desc: 'Liste tous les chefs' },
-    { method: 'GET',   path: '/api/speakers/:id',                      desc: 'Profil d\'un chef + ses sessions' },
-    { method: 'GET',   path: '/api/rooms',                             desc: 'Liste toutes les salles' },
-    { method: 'GET',   path: '/api/rooms/:id',                         desc: 'Détail d\'une salle + ses sessions' },
+  const endpoints = [
+    { method: 'GET', path: '/api/events', description: 'Liste tous les événements' },
+    { method: 'GET', path: '/api/events/:id', description: 'Détail d\'un événement + sessions' },
+    { method: 'GET', path: '/api/sessions', description: 'Liste les sessions (filtres: ?eventId=, ?roomId=)' },
+    { method: 'GET', path: '/api/sessions/live', description: 'Sessions en cours (live)' },
+    { method: 'GET', path: '/api/sessions/:id', description: 'Détail complet + flag isLive' },
+    { method: 'GET', path: '/api/sessions/:id/questions', description: 'Questions triées par upvotes' },
+    { method: 'POST', path: '/api/sessions/:id/questions', description: 'Poser une question (live uniquement)' },
+    { method: 'PATCH', path: '/api/questions/:id/upvote', description: 'Upvoter une question' },
+    { method: 'GET', path: '/api/speakers', description: 'Liste tous les chefs' },
+    { method: 'GET', path: '/api/speakers/:id', description: 'Profil d\'un chef + ses sessions' },
+    { method: 'GET', path: '/api/rooms', description: 'Liste toutes les salles' },
+    { method: 'GET', path: '/api/rooms/:id', description: 'Détail d\'une salle + sessions avec isLive' },
   ]
 
-  const colors: Record<string, string> = {
-    GET: '#2e7d32', POST: '#1565c0', PATCH: '#e65100', DELETE: '#c62828',
-  }
-
   return (
-    <div style={{ maxWidth: 800 }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: 4 }}>🍳 EventSync API</h1>
-      <p style={{ color: '#666', marginBottom: 32 }}>
-        Backend Next.js Route Handlers — Atelier Gastronomique 2025
-      </p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-amber-900 mb-4">
+            🍳 EventSync API
+          </h1>
+          <p className="text-xl text-amber-700">
+            TENDA-KANINA — Backend Next.js
+          </p>
+          <div className="mt-4">
+            <span className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              API en ligne
+            </span>
+          </div>
+        </div>
 
-      <h2 style={{ fontSize: '1rem', marginBottom: 12, color: '#333' }}>Endpoints disponibles</h2>
-      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.85rem' }}>
-        <thead>
-          <tr style={{ background: '#f0f0f0' }}>
-            <th style={{ padding: '8px 12px', textAlign: 'left', border: '1px solid #ddd' }}>Méthode</th>
-            <th style={{ padding: '8px 12px', textAlign: 'left', border: '1px solid #ddd' }}>Route</th>
-            <th style={{ padding: '8px 12px', textAlign: 'left', border: '1px solid #ddd' }}>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {routes.map((r, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-              <td style={{ padding: '7px 12px', border: '1px solid #ddd' }}>
-                <span style={{ color: colors[r.method] ?? '#333', fontWeight: 'bold' }}>{r.method}</span>
-              </td>
-              <td style={{ padding: '7px 12px', border: '1px solid #ddd', color: '#1a1a1a' }}>{r.path}</td>
-              <td style={{ padding: '7px 12px', border: '1px solid #ddd', color: '#555' }}>{r.desc}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-amber-800 text-white px-6 py-4">
+            <h2 className="text-2xl font-semibold">📡 Endpoints disponibles</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-amber-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-amber-900">Méthode</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-amber-900">Route</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-amber-900">Description</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100">
+                {endpoints.map((endpoint, index) => (
+                  <tr key={index} className="hover:bg-amber-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 rounded text-xs font-bold ${
+                        endpoint.method === 'GET' ? 'bg-blue-100 text-blue-700' :
+                        endpoint.method === 'POST' ? 'bg-green-100 text-green-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {endpoint.method}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                        {endpoint.path}
+                      </code>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{endpoint.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      <h2 style={{ fontSize: '1rem', marginTop: 32, marginBottom: 8, color: '#333' }}>
-        Format de réponse
-      </h2>
-      <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 6, fontSize: '0.8rem' }}>
+        <div className="mt-8 grid md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-lg font-semibold text-amber-800 mb-3">📝 Exemple POST question</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+{`POST /api/sessions/:id/questions
+Content-Type: application/json
+
+{
+  "content": "Quel couteau utiliser pour la brunoise ?",
+  "authorName": "Sophie"
+}`}
+            </pre>
+            <p className="text-sm text-gray-500 mt-2">
+              ℹ️ <code className="text-xs">authorName</code> est optionnel — anonyme si absent
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-lg font-semibold text-amber-800 mb-3">📦 Format de réponse</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
 {`// Succès
-{ "success": true, "data": { ... } }
+{
+  "success": true,
+  "data": { ... }
+}
 
 // Erreur
-{ "success": false, "error": "Message d'erreur" }`}
-      </pre>
-
-      <h2 style={{ fontSize: '1rem', marginTop: 24, marginBottom: 8, color: '#333' }}>
-        POST /api/sessions/:id/questions — body attendu
-      </h2>
-      <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 6, fontSize: '0.8rem' }}>
-{`{
-  "content": "Quel couteau utiliser pour la brunoise ?",
-  "authorName": "Sophie"   // optionnel — anonyme si absent
+{
+  "success": false,
+  "error": "Message d'erreur"
 }`}
-      </pre>
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center text-amber-600 text-sm">
+          <p>🚀 Built with Next.js 14, Prisma, PostgreSQL</p>
+        </div>
+      </div>
     </div>
   )
 }

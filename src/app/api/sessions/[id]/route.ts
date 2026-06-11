@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from '@/lib/response'
 import { isLive } from '@/lib/isLive'
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -12,17 +12,31 @@ export async function GET(
       include: {
         room: true,
         event: true,
-        speakers:  { include: { speaker: true } },
-        questions: { orderBy: { upvotes: 'desc' } },
+        speakers: {
+          include: {
+            speaker: true,
+          },
+        },
+        questions: {
+          orderBy: {
+            upvotes: 'desc',
+          },
+        },
       },
     })
-    if (!session) return sendError('Session introuvable', 404)
 
-    return sendSuccess({
+    if (!session) {
+      return sendError('Session not found', 404)
+    }
+
+    const sessionWithLive = {
       ...session,
       isLive: isLive(session.startTime, session.endTime),
-    })
-  } catch {
-    return sendError('Erreur serveur')
+    }
+
+    return sendSuccess(sessionWithLive)
+  } catch (error) {
+    console.error('Error fetching session:', error)
+    return sendError('Failed to fetch session', 500)
   }
 }

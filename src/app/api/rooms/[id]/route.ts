@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from '@/lib/response'
 import { isLive } from '@/lib/isLive'
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -12,25 +12,35 @@ export async function GET(
       include: {
         sessions: {
           include: {
-            speakers: { include: { speaker: true } },
             event: true,
+            speakers: {
+              include: {
+                speaker: true,
+              },
+            },
           },
-          orderBy: { startTime: 'asc' },
+          orderBy: {
+            startTime: 'asc',
+          },
         },
       },
     })
-    if (!room) return sendError('Salle introuvable', 404)
 
-    // Ajouter le flag isLive sur chaque session
-    const roomWithLive = {
-      ...room,
-      sessions: room.sessions.map((s) => ({
-        ...s,
-        isLive: isLive(s.startTime, s.endTime),
-      })),
+    if (!room) {
+      return sendError('Room not found', 404)
     }
-    return sendSuccess(roomWithLive)
-  } catch {
-    return sendError('Erreur serveur')
+
+    const sessionsWithLive = room.sessions.map((session) => ({
+      ...session,
+      isLive: isLive(session.startTime, session.endTime),
+    }))
+
+    return sendSuccess({
+      ...room,
+      sessions: sessionsWithLive,
+    })
+  } catch (error) {
+    console.error('Error fetching room:', error)
+    return sendError('Failed to fetch room', 500)
   }
 }

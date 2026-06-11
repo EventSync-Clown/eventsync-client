@@ -1,4 +1,4 @@
 export function isLive(startTime: Date, endTime: Date): boolean {
   const now = new Date()
-  return now >= startTime && now <= endTime
+  return now >= new Date(startTime) && now <= new Date(endTime)
 }

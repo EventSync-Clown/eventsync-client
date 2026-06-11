@@ -1,55 +1,62 @@
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendSuccess, sendError } from '@/lib/response'
 import { isLive } from '@/lib/isLive'
 
-// GET /api/sessions/:id/questions
 export async function GET(
-  _req: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({ where: { id: params.id } })
-    if (!session) return sendError('Session introuvable', 404)
-
     const questions = await prisma.question.findMany({
       where: { sessionId: params.id },
-      orderBy: { upvotes: 'desc' },
+      orderBy: {
+        upvotes: 'desc',
+      },
     })
+
     return sendSuccess(questions)
-  } catch {
-    return sendError('Erreur serveur')
+  } catch (error) {
+    console.error('Error fetching questions:', error)
+    return sendError('Failed to fetch questions', 500)
   }
 }
 
-// POST /api/sessions/:id/questions
 export async function POST(
-  req: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await req.json().catch(() => ({}))
-    const { content, authorName } = body as { content?: string; authorName?: string }
+    const session = await prisma.session.findUnique({
+      where: { id: params.id },
+    })
 
-    if (!content || content.trim() === '') {
-      return sendError('Le contenu de la question est requis', 400)
+    if (!session) {
+      return sendError('Session not found', 404)
     }
 
-    const session = await prisma.session.findUnique({ where: { id: params.id } })
-    if (!session) return sendError('Session introuvable', 404)
-
     if (!isLive(session.startTime, session.endTime)) {
-      return sendError('Les questions ne sont acceptées que pendant la session live', 403)
+      return sendError('Questions can only be posted during live sessions', 403)
+    }
+
+    const body = await request.json()
+    const { content, authorName } = body
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return sendError('Question content is required', 400)
     }
 
     const question = await prisma.question.create({
       data: {
-        content:    content.trim(),
+        content: content.trim(),
         authorName: authorName?.trim() || null,
-        sessionId:  params.id,
+        sessionId: params.id,
       },
     })
+
     return sendSuccess(question, 201)
-  } catch {
-    return sendError('Erreur serveur')
+  } catch (error) {
+    console.error('Error creating question:', error)
+    return sendError('Failed to create question', 500)
   }
 }

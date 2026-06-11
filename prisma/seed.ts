@@ -3,120 +3,223 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  // Nettoyage
+  console.log('🌱 Seeding database...')
+
+  // Clean existing data
   await prisma.question.deleteMany()
-  await prisma.sessionSpeaker.deleteMany()
+  await prisma.speakerOnSession.deleteMany()
   await prisma.session.deleteMany()
   await prisma.speaker.deleteMany()
   await prisma.room.deleteMany()
   await prisma.event.deleteMany()
 
-  // Salles
-  const cuisine     = await prisma.room.create({ data: { name: 'Cuisine Principale' } })
-  const patisserie  = await prisma.room.create({ data: { name: 'Atelier Pâtisserie' } })
-  const degustation = await prisma.room.create({ data: { name: 'Salle de Dégustation' } })
-
-  // Chefs
-  const chef1 = await prisma.speaker.create({
-    data: {
-      name: 'Marie Dupont',
-      photo: 'https://i.pravatar.cc/300?img=47',
-      bio: "Chef étoilée avec 15 ans d'expérience en cuisine française. Passionnée par la cuisine de terroir et les techniques modernes.",
-      links: { instagram: 'https://instagram.com', website: 'https://example.com' },
-    },
-  })
-  const chef2 = await prisma.speaker.create({
-    data: {
-      name: 'Jean-Luc Martin',
-      photo: 'https://i.pravatar.cc/300?img=12',
-      bio: 'Pâtissier MOF (Meilleur Ouvrier de France) spécialisé dans la pâtisserie contemporaine et le chocolat.',
-      links: { instagram: 'https://instagram.com' },
-    },
-  })
-  const chef3 = await prisma.speaker.create({
-    data: {
-      name: 'Amina Belhaj',
-      photo: 'https://i.pravatar.cc/300?img=32',
-      bio: "Cheffe spécialisée dans les cuisines méditerranéennes et les épices du monde. Auteure de 3 livres de cuisine.",
-      links: { website: 'https://example.com', instagram: 'https://instagram.com' },
-    },
-  })
-  const chef4 = await prisma.speaker.create({
-    data: {
-      name: 'Pierre Lefebvre',
-      photo: 'https://i.pravatar.cc/300?img=55',
-      bio: 'Expert en fermentation et cuisine végétale. Pionnier de la gastronomie durable en France.',
-      links: { instagram: 'https://instagram.com' },
-    },
-  })
-
-  // Helper heure
-  const todayAt = (h: number, m: number) => {
-    const d = new Date()
-    d.setHours(h, m, 0, 0)
-    return d
-  }
-
-  // Événement
+  // Create Event
   const event = await prisma.event.create({
     data: {
       title: 'Atelier Gastronomique 2025',
-      description: "Une journée immersive dans l'univers de la gastronomie française et internationale. Découvrez les secrets des grands chefs, apprenez des techniques professionnelles et laissez-vous guider dans une aventure culinaire exceptionnelle.",
-      startDate: todayAt(9, 0),
-      endDate:   todayAt(18, 0),
-      location:  'Palais de la Gastronomie, Lyon',
+      description: 'Le plus grand rassemblement de chefs étoilés et d\'experts en gastronomie. Au programme : démonstrations, ateliers pratiques et dégustations.',
+      startDate: new Date('2025-05-15T09:00:00Z'),
+      endDate: new Date('2025-05-17T18:00:00Z'),
+      location: 'Palais des Congrès, Paris',
     },
   })
 
-  // Sessions
-  const s1 = await prisma.session.create({ data: { title: 'Les Bases des Sauces Françaises',      description: 'Maîtrisez les 5 sauces mères de la cuisine française.',                           startTime: todayAt(9,  30), endTime: todayAt(11,  0), capacity: 20, eventId: event.id, roomId: cuisine.id } })
-  const s2 = await prisma.session.create({ data: { title: 'Croissants & Viennoiseries Maison',     description: 'Apprenez la technique du tourage et réalisez des croissants maison.',              startTime: todayAt(9,  30), endTime: todayAt(11, 30), capacity: 15, eventId: event.id, roomId: patisserie.id } })
-  const s3 = await prisma.session.create({ data: { title: 'Dégustation : Accords Mets & Vins',    description: "Découvrez l'art des accords entre les plats et une sélection de vins de terroir.", startTime: todayAt(11, 30), endTime: todayAt(12, 30), capacity: 30, eventId: event.id, roomId: degustation.id } })
-  const s4 = await prisma.session.create({ data: { title: 'Tajine & Épices du Monde',              description: "Plongez dans les cuisines d'Afrique du Nord et du Moyen-Orient.",                 startTime: todayAt(14,  0), endTime: todayAt(16,  0), capacity: 20, eventId: event.id, roomId: cuisine.id } })
-  const s5 = await prisma.session.create({ data: { title: 'Entremets & Mousses au Chocolat',       description: 'Créez des entremets avec chocolat tempéré et glaçages miroir.',                    startTime: todayAt(14,  0), endTime: todayAt(16, 30), capacity: 12, eventId: event.id, roomId: patisserie.id } })
-  const s6 = await prisma.session.create({ data: { title: 'Fermentation & Cuisine Végétale',       description: 'Explorez kimchi, kombucha et miso maison.',                                        startTime: todayAt(16, 30), endTime: todayAt(18,  0), capacity: 25, eventId: event.id, roomId: cuisine.id } })
+  // Create Rooms
+  const mainRoom = await prisma.room.create({
+    data: { name: 'Cuisine Principale' },
+  })
+  const pastryRoom = await prisma.room.create({
+    data: { name: 'Atelier Pâtisserie' },
+  })
+  const tastingRoom = await prisma.room.create({
+    data: { name: 'Salle de Dégustation' },
+  })
 
-  // Session live (commence 20 min avant maintenant, finit dans 40 min)
-  const now = new Date()
-  const liveSession = await prisma.session.create({
+  // Create Speakers
+  const marie = await prisma.speaker.create({
     data: {
-      title:       'Knife Skills & Découpes Professionnelles',
-      description: 'Brunoise, julienne, chiffonnade... les découpes essentielles des chefs professionnels.',
-      startTime:   new Date(now.getTime() - 20 * 60_000),
-      endTime:     new Date(now.getTime() + 40 * 60_000),
-      capacity:    18,
-      eventId:     event.id,
-      roomId:      cuisine.id,
+      name: 'Marie Dupont',
+      photoUrl: 'https://randomuser.me/api/portraits/women/1.jpg',
+      bio: 'Chef étoilée Michelin, spécialiste de la cuisine française contemporaine.',
+      externalUrl: 'https://twitter.com/mariedupont',
+    },
+  })
+  const jeanLuc = await prisma.speaker.create({
+    data: {
+      name: 'Jean-Luc Martin',
+      photoUrl: 'https://randomuser.me/api/portraits/men/2.jpg',
+      bio: 'Meilleur ouvrier de France, expert en boulangerie et viennoiserie.',
+      externalUrl: 'https://linkedin.com/in/jeanlucmartin',
+    },
+  })
+  const amina = await prisma.speaker.create({
+    data: {
+      name: 'Amina Belhaj',
+      photoUrl: 'https://randomuser.me/api/portraits/women/3.jpg',
+      bio: 'Chef pâtissière primée, fusion franco-marocaine.',
+      externalUrl: 'https://instagram.com/aminabelhaj',
+    },
+  })
+  const pierre = await prisma.speaker.create({
+    data: {
+      name: 'Pierre Lefebvre',
+      photoUrl: 'https://randomuser.me/api/portraits/men/4.jpg',
+      bio: 'Sommelier international, consultant en accords mets et vins.',
+      externalUrl: 'https://pierrelefebvre.com',
     },
   })
 
-  // Assignation chefs ↔ sessions
-  await prisma.sessionSpeaker.createMany({
-    data: [
-      { sessionId: s1.id,          speakerId: chef1.id },
-      { sessionId: s2.id,          speakerId: chef2.id },
-      { sessionId: s3.id,          speakerId: chef1.id },
-      { sessionId: s3.id,          speakerId: chef3.id },
-      { sessionId: s4.id,          speakerId: chef3.id },
-      { sessionId: s5.id,          speakerId: chef2.id },
-      { sessionId: s6.id,          speakerId: chef4.id },
-      { sessionId: liveSession.id, speakerId: chef1.id },
-      { sessionId: liveSession.id, speakerId: chef3.id },
-    ],
+  // Create Sessions
+  const now = new Date()
+  const liveStart = new Date(now)
+  liveStart.setHours(now.getHours() - 1)
+  const liveEnd = new Date(now)
+  liveEnd.setHours(now.getHours() + 1)
+
+  const session1 = await prisma.session.create({
+    data: {
+      title: 'Les secrets de la cuisine moléculaire',
+      description: 'Découvrez les techniques innovantes qui transforment les textures et les saveurs.',
+      startTime: liveStart,
+      endTime: liveEnd,
+      capacity: 50,
+      eventId: event.id,
+      roomId: mainRoom.id,
+      speakers: {
+        create: [{ speakerId: marie.id }],
+      },
+    },
   })
 
-  // Questions de démo sur la session live
+  const session2 = await prisma.session.create({
+    data: {
+      title: "L'art du croissant parfait",
+      description: 'Maîtrisez le feuilletage et obtenez des croissants dignes des meilleures boulangeries.',
+      startTime: new Date('2025-05-15T10:00:00Z'),
+      endTime: new Date('2025-05-15T12:00:00Z'),
+      capacity: 30,
+      eventId: event.id,
+      roomId: pastryRoom.id,
+      speakers: {
+        create: [{ speakerId: jeanLuc.id }],
+      },
+    },
+  })
+
+  const session3 = await prisma.session.create({
+    data: {
+      title: 'Pâtisserie orientale revisitée',
+      description: 'Un voyage gustatif entre tradition et modernité.',
+      startTime: new Date('2025-05-15T14:00:00Z'),
+      endTime: new Date('2025-05-15T16:00:00Z'),
+      capacity: 40,
+      eventId: event.id,
+      roomId: pastryRoom.id,
+      speakers: {
+        create: [{ speakerId: amina.id }],
+      },
+    },
+  })
+
+  const session4 = await prisma.session.create({
+    data: {
+      title: 'Accords mets et vins',
+      description: "Apprenez à sublimer vos plats avec les bonnes associations d'alcools.",
+      startTime: new Date('2025-05-16T11:00:00Z'),
+      endTime: new Date('2025-05-16T13:00:00Z'),
+      capacity: 60,
+      eventId: event.id,
+      roomId: tastingRoom.id,
+      speakers: {
+        create: [{ speakerId: pierre.id }],
+      },
+    },
+  })
+
+  const session5 = await prisma.session.create({
+    data: {
+      title: 'Démonstration : Cuisine en direct',
+      description: 'Marie Dupont prépare son plat signature en direct.',
+      startTime: new Date('2025-05-16T15:00:00Z'),
+      endTime: new Date('2025-05-16T17:00:00Z'),
+      capacity: 80,
+      eventId: event.id,
+      roomId: mainRoom.id,
+      speakers: {
+        create: [{ speakerId: marie.id }],
+      },
+    },
+  })
+
+  const session6 = await prisma.session.create({
+    data: {
+      title: 'Table ronde : L\'avenir de la gastronomie',
+      description: 'Débat avec nos chefs sur les tendances culinaires de demain.',
+      startTime: new Date('2025-05-17T10:00:00Z'),
+      endTime: new Date('2025-05-17T12:00:00Z'),
+      capacity: 100,
+      eventId: event.id,
+      roomId: mainRoom.id,
+      speakers: {
+        create: [
+          { speakerId: marie.id },
+          { speakerId: amina.id },
+          { speakerId: pierre.id },
+        ],
+      },
+    },
+  })
+
+  const session7 = await prisma.session.create({
+    data: {
+      title: 'Atelier : Créez votre propre fromage',
+      description: 'Initiation à la fromagerie artisanale.',
+      startTime: new Date('2025-05-17T14:00:00Z'),
+      endTime: new Date('2025-05-17T16:00:00Z'),
+      capacity: 25,
+      eventId: event.id,
+      roomId: tastingRoom.id,
+      speakers: {
+        create: [{ speakerId: pierre.id }],
+      },
+    },
+  })
+
+  // Create demo questions for live session
   await prisma.question.createMany({
     data: [
-      { content: 'Quel est le meilleur couteau pour débuter en cuisine ?',                      authorName: 'Sophie', upvotes: 7, sessionId: liveSession.id },
-      { content: 'Comment aiguiser un couteau à la maison sans pierre à aiguiser ?',            authorName: null,     upvotes: 4, sessionId: liveSession.id },
-      { content: 'Quelle est la différence entre la julienne et la brunoise en utilisation ?',  authorName: 'Thomas', upvotes: 2, sessionId: liveSession.id },
+      {
+        content: 'Quelle est la différence entre la cuisine moléculaire et la gastronomie moderne ?',
+        authorName: 'Sophie',
+        upvotes: 12,
+        sessionId: session1.id,
+      },
+      {
+        content: 'Avez-vous des recommandations de livres sur ce sujet ?',
+        authorName: null,
+        upvotes: 5,
+        sessionId: session1.id,
+      },
+      {
+        content: 'Peut-on appliquer ces techniques chez soi avec du matériel basique ?',
+        authorName: 'Thomas',
+        upvotes: 8,
+        sessionId: session1.id,
+      },
     ],
   })
 
-  console.log('✅ Seed terminé avec succès !')
-  console.log(`📅 Événement : ${event.title}`)
-  console.log(`👨‍🍳 ${4} chefs | 🍳 ${7} sessions | 🔴 1 session live`)
+  console.log('✅ Seed completed!')
+  console.log(`📅 Event: ${event.title}`)
+  console.log(`🎤 Speakers: ${[marie.name, jeanLuc.name, amina.name, pierre.name].join(', ')}`)
+  console.log(`🎙️ Live session: ${session1.title}`)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch((e) => {
+    console.error('❌ Seed failed:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

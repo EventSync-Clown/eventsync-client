@@ -7,15 +7,23 @@ export async function GET() {
       include: {
         sessions: {
           include: {
-            speakers: { include: { speaker: true } },
             event: true,
+            speakers: {
+              include: {
+                speaker: true,
+              },
+            },
           },
-          orderBy: { startTime: 'asc' },
+          orderBy: {
+            startTime: 'asc',
+          },
         },
       },
     })
+
     return sendSuccess(rooms)
-  } catch {
-    return sendError('Erreur serveur')
+  } catch (error) {
+    console.error('Error fetching rooms:', error)
+    return sendError('Failed to fetch rooms', 500)
   }
 }

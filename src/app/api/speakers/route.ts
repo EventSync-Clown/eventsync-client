@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { sendSuccess, sendError } from '@/lib/response'
 
+
 export async function GET() {
   try {
     const speakers = await prisma.speaker.findMany({
@@ -8,16 +9,22 @@ export async function GET() {
         sessions: {
           include: {
             session: {
-              include: { room: true, event: true },
+              include: {
+                room: true,
+                event: true,
+              },
             },
           },
-          orderBy: { session: { startTime: 'asc' } },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: {
+        name: 'asc',
+      },
     })
+
     return sendSuccess(speakers)
-  } catch {
-    return sendError('Erreur serveur')
+  } catch (error) {
+    console.error('Error fetching speakers:', error)
+    return sendError('Failed to fetch speakers', 500)
   }
 }

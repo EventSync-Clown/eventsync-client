@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { sendSuccess, sendError } from '@/lib/response'
+import { isLive } from '@/lib/isLive'
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -12,16 +13,33 @@ export async function GET(
         sessions: {
           include: {
             room: true,
-            speakers: { include: { speaker: true } },
-            questions: { orderBy: { upvotes: 'desc' } },
+            speakers: {
+              include: {
+                speaker: true,
+              },
+            },
+            questions: true,
           },
-          orderBy: { startTime: 'asc' },
+          orderBy: {
+            startTime: 'asc',
+          },
         },
       },
     })
-    if (!event) return sendError('Événement introuvable', 404)
-    return sendSuccess(event)
-  } catch {
-    return sendError('Erreur serveur')
+
+    if (!event) {
+      return sendError('Event not found', 404)
+    }
+
+    // Add isLive flag to each session
+    const sessionsWithLive = event.sessions.map((session) => ({
+      ...session,
+      isLive: isLive(session.startTime, session.endTime),
+    }))
+
+    return sendSuccess({ ...event, sessions: sessionsWithLive })
+  } catch (error) {
+    console.error('Error fetching event:', error)
+    return sendError('Failed to fetch event', 500)
   }
 }
