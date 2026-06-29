@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Seeding database...')
+  console.log(' Seeding database...')
 
   // Clean existing data
   await prisma.question.deleteMany()
@@ -75,6 +75,7 @@ async function main() {
   liveStart.setHours(now.getHours() - 1)
   const liveEnd = new Date(now)
   liveEnd.setHours(now.getHours() + 1)
+
 
   const session1 = await prisma.session.create({
     data: {
@@ -209,15 +210,15 @@ async function main() {
     ],
   })
 
-  console.log('✅ Seed completed!')
-  console.log(`📅 Event: ${event.title}`)
-  console.log(`🎤 Speakers: ${[marie.name, jeanLuc.name, amina.name, pierre.name].join(', ')}`)
-  console.log(`🎙️ Live session: ${session1.title}`)
+  console.log(' Seed completed!')
+  console.log(` Event: ${event.title}`)
+  console.log(` Speakers: ${[marie.name, jeanLuc.name, amina.name, pierre.name].join(', ')}`)
+  console.log(` Live session: ${session1.title}`)
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e)
+    console.error(' Seed failed:', e)
     process.exit(1)
   })
   .finally(async () => {

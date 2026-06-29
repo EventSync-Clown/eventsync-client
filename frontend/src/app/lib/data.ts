@@ -8,7 +8,8 @@ export const events = [
     location: "CCI Ivato",
     startDate: "2026-05-14",
     endDate: "2026-05-16",
-  }
+  },
+
 ];
 
 export const sessions = [
